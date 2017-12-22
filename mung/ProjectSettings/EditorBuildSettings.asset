@@ -6,5 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/mung.unity
-    guid: 9de8c35f15d9bb84497f5d38431a3c1e
+    path: Assets/Scene/mung.unity
+    guid: f73b55bce0f19ee45a8557b1dd7abd57
+  - enabled: 1
+    path: Assets/Scene/mainGame.unity
+    guid: 24e08f1d2f7f4814a8b1d612f96b837a
