@@ -13,16 +13,30 @@ public class stoneSelect : MonoBehaviour
     public List<GameObject> sList;//내 바둑알 리스트
     public List<GameObject> eList;//적 바둑알 리스트
 
-    private GameObject target;  //선택용 타겟
+    public GameObject target;  //선택용 타겟
     public int startCount;      //게임시작위해 두는 바둑알 갯수
     public Vector3 tPos;        //y값 포함된 위치 
     public Vector3 tPosr;       //진짜 발사 위치(y값제외)
     public int powerF;          //파워
 
+    public string firstNum;         //현재 바둑알 번호
+    public string lastNum;          //더 이상 못 바꾸는 바둑알
+    public bool isReady;            //최종선고
+    public bool readyToFire;        //발사준비완료
 
-    public float currentAngle;  //직빵 내적 벡터
-    public float playerAngle;   //플레이어가 실제로 쏜 내적 벡터
+    public int selectCount;         // 확인할것
+
+    private Vector3 fireDirection;   //발사방향
+    public Vector3 fireDirectionR;  //Y축 제외
+    public float firePower;         //발사 힘\
+    public float timePower;         //clamp 확인용
     
+    public float clamps = 0.0f;         // clamp 까지 거친 결과값
+    public float max = 3.0f;           // 당기는 길이 최대값
+    public float current = 1.0f;        // 현재 얼마나 당겼는지 거리값
+    public float powermax = 15.0f;      // 알에 가해지는 힘 최대값
+    public float powermin = 3.0f;       // 알에 가해지는 힘 최소값
+
     void Awake()
     {
         sList = new List<GameObject>();
@@ -30,6 +44,7 @@ public class stoneSelect : MonoBehaviour
         {
             GameObject newObj = Instantiate(orignStone);
             newObj.name = i.ToString();
+
             sList.Add(newObj);
             sList[i].SetActive(false);
 
@@ -42,8 +57,11 @@ public class stoneSelect : MonoBehaviour
         }
         startCount = 0;
         powerF = 0;
-        currentAngle = 1.0f; //1이면 제대로 정빵 
-        playerAngle = 0.0f;
+        isReady = false;
+        readyToFire = false;
+        selectCount = 0;
+        timePower = 0;
+        //LineMax = 3.0f;
       
         
     }
@@ -52,7 +70,6 @@ public class stoneSelect : MonoBehaviour
     {
 
     }
-
 
     // Update is called once per frame
     void Update()
@@ -71,34 +88,64 @@ public class stoneSelect : MonoBehaviour
             }
         }
 
-
         //내적값 구하기 -> 플레이어가 알 선택하면 동작 하면됨
-      /* playerAngle = Vector3.Dot(Vector3.Normalize(eList[0].transform.position - target.transform.position),
-           Vector3.Normalize(tPosr - target.transform.position));
-           */
+        /* playerAngle = Vector3.Dot(Vector3.Normalize(eList[0].transform.position - target.transform.position),
+             Vector3.Normalize(tPosr - target.transform.position));
+             */
+
+        //알 선택하는 과정 - 보류
+
+
+
+        //발사 방향 잡기
+        if (target.gameObject != null)
+        {
+            if (target.gameObject.tag == "myStone")
+            {
+                if (Input.GetMouseButton(0))
+                {
+                    fireDirection = target.transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                }
+                fireDirectionR = new Vector3(fireDirection.x, 0, fireDirection.z);
+                //발사 힘 주기
+                /* firePower = 
+                     (Vector3.Distance(new Vector3(target.transform.position.x, 0, target.transform.position.z),
+                     new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, 0, Camera.main.ScreenToWorldPoint(Input.mousePosition).z))
+                     /LineMax)*15.0f;*/
+
+                //최소 3~ 최대 15의 힘 
+                //timePower = Mathf.Clamp(firePower, 3.0f, 15.0f);
+
+                //3 + (4 * Mathf.Clamp(firePower, 0.5f, 3.0f));
+
+
+                float currentpower = (Vector3.Distance(new Vector3(target.transform.position.x, 0, target.transform.position.z),
+                     new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, 0, Camera.main.ScreenToWorldPoint(Input.mousePosition).z))
+                     / max) * powermax;
+                clamps = Mathf.Clamp(currentpower, powermin, powermax);
+                //발사!
+                if (Input.GetMouseButtonUp(0))
+                {
+                    target.GetComponent<Rigidbody>().AddForce(fireDirectionR.normalized *
+                        clamps, ForceMode.Impulse);
+                }
+              
+            }
+        }
     }
-    
-    
-    
-   private void FixedUpdate()
+    private void OnGUI()
+    {
+        
+
+        
+    }
+
+
+    private void FixedUpdate()
     {
         if (Input.GetMouseButtonDown(0))
         {
             castpRay();
-        }
-
-        //방향지정
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            tPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            tPosr = new Vector3(tPos.x, 0, tPos.z);
-            Debug.Log(tPosr);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Vector3 fPos = tPosr - target.transform.position;
-            target.GetComponent<Rigidbody>().AddForce(fPos.normalized * powerF, ForceMode.Impulse);
         }
 
     }
@@ -121,6 +168,4 @@ public class stoneSelect : MonoBehaviour
             }
         }
     }
-    
-
 }

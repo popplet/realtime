@@ -186,7 +186,6 @@ GameObject:
   m_Component:
   - component: {fileID: 400157890}
   - component: {fileID: 400157891}
-  - component: {fileID: 400157892}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -223,23 +222,19 @@ MonoBehaviour:
     type: 2}
   sList: []
   eList: []
+  target: {fileID: 0}
   startCount: 0
   tPos: {x: 0, y: 0, z: 0}
   tPosr: {x: 0, y: 0, z: 0}
   powerF: 0
-  currentAngle: 0
-  playerAngle: 0
---- !u!114 &400157892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 400157889}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f934f8626b01dda419e34f3341f5f87a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  firstNum: 
+  lastNum: 
+  isReady: 0
+  readyToFire: 0
+  selectCount: 0
+  fireDirectionR: {x: 0, y: 0, z: 0}
+  firePower: 0
+  timePower: 0
 --- !u!1 &507541704
 GameObject:
   m_ObjectHideFlags: 0
@@ -321,7 +316,7 @@ Transform:
   m_GameObject: {fileID: 507541704}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.6, y: 0.75, z: 0.6}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
