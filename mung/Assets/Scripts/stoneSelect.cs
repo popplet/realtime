@@ -123,6 +123,7 @@ public class stoneSelect : MonoBehaviour
                      new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, 0, Camera.main.ScreenToWorldPoint(Input.mousePosition).z))
                      / max) * powermax;
                 clamps = Mathf.Clamp(currentpower, powermin, powermax);
+                
                 //발사!
                 if (Input.GetMouseButtonUp(0))
                 {
