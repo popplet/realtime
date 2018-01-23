@@ -4,38 +4,24 @@ using UnityEngine;
 
 public class stoneSelect : MonoBehaviour
 {
-
-
     public GameObject orignStone;//검은색 바둑알
-    public GameObject enemyOriginStone;//흰색 바둑알
-
-
     public List<GameObject> sList;//내 바둑알 리스트
-    public List<GameObject> eList;//적 바둑알 리스트
 
     public GameObject target;  //선택용 타겟
     public int startCount;      //게임시작위해 두는 바둑알 갯수
-    public Vector3 tPos;        //y값 포함된 위치 
-    public Vector3 tPosr;       //진짜 발사 위치(y값제외)
-    public int powerF;          //파워
-
-    public string firstNum;         //현재 바둑알 번호
-    public string lastNum;          //더 이상 못 바꾸는 바둑알
-    public bool isReady;            //최종선고
-    public bool readyToFire;        //발사준비완료
-
-    public int selectCount;         // 확인할것
-
-    private Vector3 fireDirection;   //발사방향
+  
+   
+    private Vector3 fireDirection;  //발사방향
     public Vector3 fireDirectionR;  //Y축 제외
-    public float firePower;         //발사 힘\
-    public float timePower;         //clamp 확인용
-    
+ 
     public float clamps = 0.0f;         // clamp 까지 거친 결과값
     public float max = 3.0f;           // 당기는 길이 최대값
     public float current = 1.0f;        // 현재 얼마나 당겼는지 거리값
     public float powermax = 15.0f;      // 알에 가해지는 힘 최대값
     public float powermin = 3.0f;       // 알에 가해지는 힘 최소값
+
+
+    public bool canCntr;                //조종가능?
 
     void Awake()
     {
@@ -48,22 +34,14 @@ public class stoneSelect : MonoBehaviour
             sList.Add(newObj);
             sList[i].SetActive(false);
 
-            //적바둑알 복사
-            GameObject newEobj = Instantiate(enemyOriginStone);
-            newEobj.name = "e_" + i.ToString();
-            eList.Add(newEobj);
-            eList[i].transform.position = new Vector3(Random.Range(-2, 2), 0.5f, Random.Range(0, 2));
+
 
         }
         startCount = 0;
-        powerF = 0;
-        isReady = false;
-        readyToFire = false;
-        selectCount = 0;
-        timePower = 0;
+        canCntr = false;
         //LineMax = 3.0f;
-      
-        
+
+
     }
 
     void Start()
@@ -75,32 +53,18 @@ public class stoneSelect : MonoBehaviour
     void Update()
     {
         //최초의 바둑알 놓기
-        if (startCount < 5)
-        {
-            if (Input.GetMouseButtonDown(0))//게임시작
-            {
-                Vector3 mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                Vector3 mPosr = new Vector3(mPos.x, 0.5f, mPos.z);
-                Debug.Log(mPosr);
-                sList[startCount].transform.position = mPosr;
-                sList[startCount].SetActive(true);
-                startCount++;
-            }
-        }
+        setPlay();
 
-        //내적값 구하기 -> 플레이어가 알 선택하면 동작 하면됨
-        /* playerAngle = Vector3.Dot(Vector3.Normalize(eList[0].transform.position - target.transform.position),
-             Vector3.Normalize(tPosr - target.transform.position));
-             */
 
         //알 선택하는 과정 - 보류
 
 
-
         //발사 방향 잡기
+
         if (target.gameObject != null)
         {
-            if (target.gameObject.tag == "myStone")
+            if (target.gameObject.tag == "myStone"&&canCntr&& 
+                GetComponentInParent<gameMaster>().wHoTurn ==1)//검은바둑알 턴일때만 발사 가능
             {
                 if (Input.GetMouseButton(0))
                 {
@@ -108,39 +72,20 @@ public class stoneSelect : MonoBehaviour
                 }
                 fireDirectionR = new Vector3(fireDirection.x, 0, fireDirection.z);
                 //발사 힘 주기
-                /* firePower = 
-                     (Vector3.Distance(new Vector3(target.transform.position.x, 0, target.transform.position.z),
-                     new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, 0, Camera.main.ScreenToWorldPoint(Input.mousePosition).z))
-                     /LineMax)*15.0f;*/
-
-                //최소 3~ 최대 15의 힘 
-                //timePower = Mathf.Clamp(firePower, 3.0f, 15.0f);
-
-                //3 + (4 * Mathf.Clamp(firePower, 0.5f, 3.0f));
-
-
                 float currentpower = (Vector3.Distance(new Vector3(target.transform.position.x, 0, target.transform.position.z),
                      new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, 0, Camera.main.ScreenToWorldPoint(Input.mousePosition).z))
                      / max) * powermax;
                 clamps = Mathf.Clamp(currentpower, powermin, powermax);
-                
                 //발사!
                 if (Input.GetMouseButtonUp(0))
                 {
                     target.GetComponent<Rigidbody>().AddForce(fireDirectionR.normalized *
                         clamps, ForceMode.Impulse);
+                    StartCoroutine("turnChange");
                 }
-              
             }
         }
     }
-    private void OnGUI()
-    {
-        
-
-        
-    }
-
 
     private void FixedUpdate()
     {
@@ -148,7 +93,6 @@ public class stoneSelect : MonoBehaviour
         {
             castpRay();
         }
-
     }
     void castpRay()
     {
@@ -168,5 +112,35 @@ public class stoneSelect : MonoBehaviour
                 target = hit.collider.gameObject;
             }
         }
+    }
+    IEnumerator turnChange()//턴 넘기는 시간
+    {
+        //한턴에 한발만 움직일 수 있어야 함 코루틴 시작됨가 동시에 검은알의 컨트롤 조건을 false로 바꿔서 더이상 못 건드리게 해야한다.
+        canCntr = false;
+        yield return new WaitForSeconds(3f);
+        GetComponentInParent<gameMaster>().wHoTurn = 2;//흰 바둑알에게 턴 넘겨줌
+        GetComponentInParent<gameMaster>().turnChange = true;
+    
+    }
+    void setPlay()//최초1회 실행
+    {
+        if (startCount < 5)
+        {
+            if (Input.GetMouseButtonDown(0))//게임시작
+            {
+                Vector3 mPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                Vector3 mPosr = new Vector3(mPos.x, 0.5f, mPos.z);
+                Debug.Log(mPosr);
+                sList[startCount].transform.position = mPosr;
+                sList[startCount].SetActive(true);
+                startCount++;
+                if (startCount == 5)
+                {
+                    GetComponentInParent<gameMaster>().wHoTurn = 1;//게임의 시작을 알림, 검은바둑알 턴
+                    canCntr = true;
+                }
+            }
+        }
+
     }
 }
