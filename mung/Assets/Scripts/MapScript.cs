@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Map : MonoBehaviour {
+public class MapScript : MonoBehaviour {
+
 
     public GameObject plane;
     List<GameObject> planelist;
@@ -34,6 +35,25 @@ public class Map : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.G))
         {
             planelist[20].SetActive(false);
+        }
+    }
+
+    void RemoveMap(GameObject obj)
+    {
+        for (int i = 0; i < planelist.Count; i++)
+        {
+            if (planelist[i].name == obj.name)
+            {
+                planelist[i].SetActive(false);
+            }
+        }
+    }
+
+    void ReturnMap()
+    {
+        for (int i = 0; i < planelist.Count; i++)
+        {
+            planelist[i].SetActive(true);
         }
     }
 }
